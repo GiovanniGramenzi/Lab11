@@ -5,6 +5,11 @@ from database.dao import DAO
 class Model:
     def __init__(self):
         self.G = nx.Graph()
+        self.lista_rifugi=DAO.get_rifugi()
+        self.rif_dict={}
+        for rif in self.lista_rifugi:
+            self.rif_dict[rif.id]=rif
+
 
     def build_graph(self, year: int):
         """
@@ -14,6 +19,11 @@ class Model:
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
         # TODO
+        connessioni=DAO.get_connessioni(year)
+        for c in connessioni:
+            self.G.add_edge(self.rif_dict[c.id_rifugio1],self.rif_dict[c.id_rifugio2])
+        return self.G
+
 
     def get_nodes(self):
         """
@@ -21,6 +31,8 @@ class Model:
         :return: lista dei rifugi presenti nel grafo.
         """
         # TODO
+
+
 
     def get_num_neighbors(self, node):
         """
