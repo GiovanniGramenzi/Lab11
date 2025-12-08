@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 import networkx as nx
 from database.dao import DAO
 
@@ -19,6 +21,7 @@ class Model:
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
         # TODO
+        self.G.clear()
         connessioni=DAO.get_connessioni(year)
         for c in connessioni:
             self.G.add_edge(self.rif_dict[c.id_rifugio1],self.rif_dict[c.id_rifugio2])
@@ -31,7 +34,7 @@ class Model:
         :return: lista dei rifugi presenti nel grafo.
         """
         # TODO
-
+        return list(self.G.nodes())
 
 
     def get_num_neighbors(self, node):
@@ -41,6 +44,8 @@ class Model:
         :return: numero di vicini diretti del nodo indicato
         """
         # TODO
+        vicini=list(self.G.neighbors(node))
+        return len(vicini)
 
     def get_num_connected_components(self):
         """
@@ -48,6 +53,18 @@ class Model:
         :return: numero di componenti connesse
         """
         # TODO
+        return nx.number_connected_components(self.G)
+
+    def dfs_recursive(self,nodo,visitati):
+        visitati.add(nodo)
+        for neighbor in self.G.neighbors(nodo):
+            if neighbor not in visitati:
+                self.dfs_recursive(neighbor,visitati)
+    def get_reachable_recursive(self,start):
+        visitati=set()
+        self.dfs_recursive(start,visitati)
+        visitati.discard(start)
+        return list(visitati)
 
     def get_reachable(self, start):
         """
@@ -67,3 +84,11 @@ class Model:
         """
 
         # TODO
+        bfs_albero=nx.bfs_tree(self.G,start)
+        nodi_raggiungibili=[]
+        for n in bfs_albero.nodes:
+            if n!=start:
+                nodi_raggiungibili.append(n)
+        nodi_raggiungibili.sort(key=attrgetter('nome'))
+        #return nodi_raggiungibili
+        return self.get_reachable_recursive(start)
